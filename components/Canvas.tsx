@@ -6,6 +6,8 @@ import ColorPicker from './ColorPicker';
 const CANVAS_SIZE = 32;
 const PIXEL_SIZE = 20;
 
+
+
 export default function Canvas() {
   const [color, setColor] = useState('#000000');
   const [canvas, setCanvas] = useState<string[][]>(

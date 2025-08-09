@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 
 // In-memory store (for demo purposes)
-let canvas: string[][] = Array(32).fill(null).map(() => Array(32).fill('#FFFFFF'));
+const canvas: string[][] = Array(32).fill(null).map(() => Array(32).fill('#FFFFFF'));
 const userCooldowns = new Map<string, number>();
 const COOLDOWN_MS = 5000;
 
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     );
   }
 
-  // Update canvas
+  // Update canvas - this mutates the array contents but doesn't reassign the variable
   canvas[y][x] = color;
   userCooldowns.set(userId, now);
 
