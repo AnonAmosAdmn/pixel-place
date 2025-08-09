@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 
 // In-memory store (for demo purposes)
-const canvas: string[][] = Array(32).fill(null).map(() => Array(32).fill('#FFFFFF'));
+const canvas: string[][] = Array(64).fill(null).map(() => Array(64).fill('#FFFFFF'));
 const userCooldowns = new Map<string, number>();
 const COOLDOWN_MS = 5000;
 
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
 
   // Validate input
   if (typeof x !== 'number' || typeof y !== 'number' || 
-      x < 0 || x >= 32 || y < 0 || y >= 32 ||
+      x < 0 || x >= 64 || y < 0 || y >= 64 ||
       !/^#[0-9A-F]{6}$/i.test(color)) {
     return NextResponse.json(
       { error: 'Invalid parameters' },

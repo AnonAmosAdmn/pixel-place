@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import ColorPicker from './ColorPicker';
 
-const CANVAS_SIZE = 32;
-const PIXEL_SIZE = 20;
+const CANVAS_SIZE = 64;
+const PIXEL_SIZE = 10;
 const COOLDOWN_MS = 5000; // 5 seconds cooldown
 const EXPORT_SCALE = 10; // Makes exported image higher resolution
 
