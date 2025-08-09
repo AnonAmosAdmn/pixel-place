@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ColorPicker from './ColorPicker';
 
 const CANVAS_SIZE = 32;
 const PIXEL_SIZE = 20;
 const COOLDOWN_MS = 5000; // 5 seconds cooldown
+const EXPORT_SCALE = 10; // Makes exported image higher resolution
 
 export default function Canvas() {
   const [color, setColor] = useState('#000000');
@@ -14,6 +15,7 @@ export default function Canvas() {
   );
   const [cooldown, setCooldown] = useState(0);
   const [userId] = useState(() => Math.random().toString(36).substring(2));
+  const canvasRef = useRef<HTMLDivElement>(null);
 
   // Load initial canvas state
   useEffect(() => {
@@ -75,12 +77,52 @@ export default function Canvas() {
     }
   };
 
+  const exportAsPNG = () => {
+    if (!canvasRef.current) return;
+
+    // Create a temporary canvas for export
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.width = CANVAS_SIZE * EXPORT_SCALE;
+    exportCanvas.height = CANVAS_SIZE * EXPORT_SCALE;
+    const ctx = exportCanvas.getContext('2d');
+
+    if (!ctx) return;
+
+    // Draw each pixel to the export canvas
+    for (let y = 0; y < CANVAS_SIZE; y++) {
+      for (let x = 0; x < CANVAS_SIZE; x++) {
+        ctx.fillStyle = canvas[y][x];
+        ctx.fillRect(
+          x * EXPORT_SCALE, 
+          y * EXPORT_SCALE, 
+          EXPORT_SCALE, 
+          EXPORT_SCALE
+        );
+      }
+    }
+
+    // Convert to PNG and download
+    exportCanvas.toBlob((blob) => {
+      if (!blob) return;
+      
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `pixel-art-${new Date().toISOString().slice(0, 10)}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 'image/png');
+  };
+
   return (
     <div className="flex flex-col items-center p-4 gap-4">
       <ColorPicker color={color} onChange={setColor} />
 
       {/* Canvas Grid */}
       <div 
+        ref={canvasRef}
         className="grid border-2 border-gray-800 bg-gray-800 gap-px shadow-lg"
         style={{
           gridTemplateColumns: `repeat(${CANVAS_SIZE}, ${PIXEL_SIZE}px)`,
@@ -104,19 +146,33 @@ export default function Canvas() {
         )}
       </div>
 
-      {/* Cooldown counter at the bottom */}
-      <div className={`mt-2 px-4 py-2 rounded-lg transition-all duration-300 ${cooldown > 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-        {cooldown > 0 ? (
-          <div className="flex items-center gap-2">
-            <span className="animate-pulse">⏳</span>
-            <span>Cooldown: {(cooldown / 1000).toFixed(0)}s remaining</span>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <span>✅</span>
-            <span>Ready to place pixels!</span>
-          </div>
-        )}
+      {/* Action buttons container */}
+      <div className="flex flex-col items-center gap-4 w-full max-w-md">
+        {/* Save as PNG button */}
+        <button
+          onClick={exportAsPNG}
+          className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+          </svg>
+          Save as PNG
+        </button>
+
+        {/* Cooldown indicator */}
+        <div className={`w-full text-center px-4 py-2 rounded-lg transition-all duration-300 ${cooldown > 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+          {cooldown > 0 ? (
+            <div className="flex items-center justify-center gap-2">
+              <span className="animate-pulse">⏳</span>
+              <span>Cooldown: {(cooldown / 1000).toFixed(0)}s remaining</span>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center gap-2">
+              <span>✅</span>
+              <span>Ready to place pixels!</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
